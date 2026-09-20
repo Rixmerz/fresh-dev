@@ -1,0 +1,50 @@
+name: fresh-refactor
+description: >
+  Move or rename a file or export in a Deno Fresh project and know what it
+  reaches before and after. Read-only consultation plan: Fresh-level impact
+  of the file, every import and JSX use of the symbol, then the impact of the
+  actual diff against the base ref and a full validation. The move itself is
+  done by the calling agent between steps `usages` and `after` — vise returns
+  a plan, it does not dispatch. Requires the fresh-dev plugin bound via
+  .vise/capabilities.yaml (x.fresh.* → fresh.fresh_*); see
+  templates/vise/capabilities.yaml.
+tier: L2
+inputs:
+  - workspace    # absolute project root
+  - file         # file being moved or edited, e.g. components/Hero.tsx
+  - symbol       # export being moved or renamed, e.g. Hero
+  - base         # git base ref to diff against after the move, e.g. main
+steps:
+  - id: before
+    capability: x.fresh.impact
+    description: Routes, islands, layouts and middleware that depend on the file today
+    args:
+      workspace: "{{ inputs.workspace }}"
+      files: ["{{ inputs.file }}"]
+      depth: 3
+  - id: usages
+    capability: x.fresh.usages
+    description: Every import and JSX use of the symbol, including aliased JSX the LSP does not see
+    args:
+      workspace: "{{ inputs.workspace }}"
+      target: "{{ inputs.file }}::{{ inputs.symbol }}"
+  - id: after
+    capability: x.fresh.impact
+    description: Impact of the real diff against the base ref, with the checks to run
+    args:
+      workspace: "{{ inputs.workspace }}"
+      git:
+        base: "{{ inputs.base }}"
+      depth: 3
+  - id: validate
+    capability: x.fresh.validate
+    description: Full structural validation after the move (D001 catches broken relative imports)
+    args:
+      workspace: "{{ inputs.workspace }}"
+  - id: assert
+    capability: meta.assert
+    description: The validator must report ok
+    args:
+      condition: match
+      pattern: "^true$"
+      against: "{{ steps.validate.output.ok }}"

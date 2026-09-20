@@ -1,0 +1,10 @@
+{
+  "name": "fresh-dev",
+  "version": "0.1.0",
+  "description": "Deno Fresh specialist for Claude Code: read-only semantic analysis MCP (routes, islands, components, middleware, server/client boundaries, request tracing, impact), Fresh reasoning skills, a structural validator with a headless CLI, hooks that keep the index fresh, and deno lsp wiring. Designed to sit under vise (orchestration) and beside livespec (symbol graph).",
+  "author": { "name": "Juan Pablo Diaz" },
+  "homepage": "https://github.com/Rixmerz/fresh-dev",
+  "repository": "https://github.com/Rixmerz/fresh-dev",
+  "license": "MIT",
+  "keywords": ["deno", "fresh", "preact", "islands", "mcp", "static-analysis", "vise", "livespec"]
+}

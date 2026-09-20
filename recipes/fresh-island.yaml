@@ -1,0 +1,53 @@
+name: fresh-island
+description: >
+  Create or change an island in a Deno Fresh project keeping its props
+  serializable and its client closure free of server-only code. Read-only
+  consultation plan: it reads the island as it is, the current boundary
+  violations, then re-reads the island and validates once the edit exists.
+  The create/edit is done by the calling agent between steps `boundaries`
+  and `after` — vise returns a plan, it does not dispatch. Requires the
+  fresh-dev plugin bound via .vise/capabilities.yaml
+  (x.fresh.* → fresh.fresh_*); see templates/vise/capabilities.yaml.
+tier: L2
+inputs:
+  - workspace    # absolute project root
+  - name         # island name, e.g. Counter
+steps:
+  - id: before
+    capability: x.fresh.islands
+    description: The island today — exports, props serializability, users, client closure, violations (empty result when it does not exist yet)
+    args:
+      workspace: "{{ inputs.workspace }}"
+      name: "{{ inputs.name }}"
+  - id: boundaries
+    capability: x.fresh.boundaries
+    description: Current island-to-server-only chains, so the edit does not add one (B001, I003)
+    args:
+      workspace: "{{ inputs.workspace }}"
+      only_violations: true
+  - id: after
+    capability: x.fresh.islands
+    description: The island after the edit — props must be serializable (I002), closure bounded (I006), violations empty
+    args:
+      workspace: "{{ inputs.workspace }}"
+      name: "{{ inputs.name }}"
+  - id: validate
+    capability: x.fresh.validate
+    description: Island and boundary rules once the edit exists
+    args:
+      workspace: "{{ inputs.workspace }}"
+      categories: ["islands", "boundaries"]
+  - id: assert
+    capability: meta.assert
+    description: The validator must report ok
+    args:
+      condition: match
+      pattern: "^true$"
+      against: "{{ steps.validate.output.ok }}"
+  - id: assert_no_violations
+    capability: meta.assert
+    description: The island after the edit must carry no non-empty violations list
+    args:
+      condition: no_match
+      pattern: "violations.{0,4}\\[\\s*[^\\]\\s]"
+      against: "{{ steps.after.output.islands }}"

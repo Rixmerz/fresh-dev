@@ -1,0 +1,41 @@
+name: fresh-component
+description: >
+  Create or change a component in a Deno Fresh project without duplicating an
+  existing one or breaking its users. Read-only consultation plan: it looks
+  for a component with the same name, lists who uses the file today, and
+  validates conventions and boundaries once the edit exists. The create/edit
+  is done by the calling agent between steps `usages` and `validate` — vise
+  returns a plan, it does not dispatch. Requires the fresh-dev plugin bound
+  via .vise/capabilities.yaml (x.fresh.* → fresh.fresh_*); see
+  templates/vise/capabilities.yaml.
+tier: L2
+inputs:
+  - workspace    # absolute project root
+  - name         # component name, e.g. PriceTable
+  - file         # component file, e.g. components/PriceTable.tsx (may not exist yet)
+steps:
+  - id: existing
+    capability: x.fresh.components
+    description: Components matching the name, with boundary and users; reuse before creating
+    args:
+      workspace: "{{ inputs.workspace }}"
+      name: "{{ inputs.name }}"
+  - id: usages
+    capability: x.fresh.usages
+    description: Imports and JSX uses of the file today; an error here means the file does not exist yet, so nothing to preserve
+    args:
+      workspace: "{{ inputs.workspace }}"
+      target: "{{ inputs.file }}"
+  - id: validate
+    capability: x.fresh.validate
+    description: Conventions (C001, C005) and boundaries (B001, B002) once the edit exists
+    args:
+      workspace: "{{ inputs.workspace }}"
+      categories: ["conventions", "boundaries"]
+  - id: assert
+    capability: meta.assert
+    description: The validator must report ok
+    args:
+      condition: match
+      pattern: "^true$"
+      against: "{{ steps.validate.output.ok }}"

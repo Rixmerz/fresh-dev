@@ -1,0 +1,21 @@
+/* compiled output — see EXPECTED.md (C003) */
+*,
+::before,
+::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+}
+.site {
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+.nav {
+  display: flex;
+  gap: 1rem;
+}
+.card {
+  padding: 1rem;
+  border-width: 1px;
+}

@@ -1,0 +1,7 @@
+# fresh-dev graph export for livespec — add to <project>/.livespec.toml.
+# fresh_graph_export writes .fresh-dev/graph.json (Graphify node-link JSON);
+# livespec ingests it after index_project when auto_ingest is on, or by hand
+# with ingest_external_graph(dry_run=false).
+[graph]
+external = ".fresh-dev/graph.json"
+auto_ingest = true          # re-ingest after each index_project

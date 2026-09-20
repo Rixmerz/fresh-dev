@@ -1,0 +1,21 @@
+# Deno / node
+node_modules/
+vendor/
+_fresh/
+*.tsbuildinfo
+# fresh-dev runtime footprint (never commit an index or dirty markers)
+.fresh-dev/
+!fixtures/**/.fresh-dev/config.json
+# livespec / vise state (neighbours)
+.mcp-docs/
+.vise/*.jsonl
+# evals output
+evals/results/
+# env & editor
+.env
+.env.*
+.DS_Store
+.idea/
+*.swp
+# local Claude Code config (may hold secrets)
+.claude.json

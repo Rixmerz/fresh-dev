@@ -1,0 +1,13 @@
+{
+  "name": "fresh-dev-local",
+  "description": "Local development marketplace: install a clone of this repo as a plugin without the published index. For normal installs use the rixmerz marketplace (github.com/Rixmerz/claude-plugins). This file deliberately does NOT claim the `rixmerz` name — Claude Code keys marketplaces by name and a clone declaring it would displace the published plugins.",
+  "owner": { "name": "Rixmerz" },
+  "plugins": [
+    {
+      "name": "fresh-dev",
+      "source": "./",
+      "description": "Deno Fresh specialist: semantic MCP, skills, validators, hooks, deno lsp.",
+      "version": "0.1.0"
+    }
+  ]
+}

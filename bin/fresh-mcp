@@ -1,0 +1,3 @@
+#!/bin/sh
+# Headless CLI: fresh-mcp <command> <workspace> [flags]. See `fresh-mcp help`.
+exec "$(dirname "$0")/fresh-dev-run" cli "$@"

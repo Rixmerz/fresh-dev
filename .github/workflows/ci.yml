@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: cache dependencies
+        working-directory: mcp
+        run: deno cache main.ts cli.ts
+      - name: format
+        working-directory: mcp
+        run: deno fmt --check
+      - name: lint
+        working-directory: mcp
+        run: deno lint
+      - name: typecheck
+        run: deno check --config mcp/deno.json mcp/main.ts mcp/cli.ts hooks/*.ts
+      - name: test
+        working-directory: mcp
+        run: deno test --allow-read --allow-env --allow-run=deno,git --allow-write
+      - name: validate fixtures through the CLI
+        run: |
+          ./bin/fresh-mcp validate fixtures/fresh-2.x-basic
+          ./bin/fresh-mcp validate fixtures/fresh-2.x-layered --json > /dev/null || test $? -eq 1
+          ./bin/fresh-mcp validate fixtures/not-fresh || test $? -eq 2
+      - name: plugin manifests are valid JSON
+        run: |
+          python3 -m json.tool .claude-plugin/plugin.json > /dev/null
+          python3 -m json.tool .claude-plugin/marketplace.json > /dev/null
+          python3 -m json.tool .mcp.json > /dev/null
+          python3 -m json.tool .lsp.json > /dev/null
+          python3 -m json.tool hooks/hooks.json > /dev/null

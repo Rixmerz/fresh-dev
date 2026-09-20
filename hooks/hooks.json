@@ -1,0 +1,89 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact|fork",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/fresh-dev-run\" hook detect",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "CwdChanged": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/fresh-dev-run\" hook detect",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "DirectoryAdded": [
+      {
+        "matcher": "slash_command|register_repo_root",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/fresh-dev-run\" hook detect",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "if": "Edit(**/routes/**) | Write(**/routes/**) | Edit(**/islands/**) | Write(**/islands/**) | Edit(**/components/**) | Write(**/components/**) | Edit(**/deno.json) | Write(**/deno.json) | Edit(**/fresh.gen.ts) | Edit(**/vite.config.ts) | Edit(**/main.ts) | Edit(**/dev.ts) | Edit(**/client.ts) | Edit(**/utils.ts)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/fresh-dev-run\" hook invalidate",
+            "timeout": 5,
+            "async": true
+          },
+          {
+            "type": "mcp_tool",
+            "server": "plugin:fresh-dev:fresh",
+            "tool": "fresh_reindex",
+            "input": { "workspace": "${cwd}" },
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/fresh-dev-run\" hook validate",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/fresh-dev-run\" hook invalidate --from-bash",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "FileChanged": [
+      {
+        "matcher": "deno.json|fresh.gen.ts|vite.config.ts",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/fresh-dev-run\" hook invalidate",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}

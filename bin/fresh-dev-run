@@ -1,0 +1,53 @@
+#!/bin/sh
+# fresh-dev launcher. Usage:
+#   fresh-dev-run mcp                 start the MCP server (stdio)
+#   fresh-dev-run cli <args...>       headless CLI (same as bin/fresh-mcp)
+#   fresh-dev-run hook <name> [args]  run hooks/<name>.ts with stdin; ALWAYS exits 0
+#
+# Finds deno on PATH or in ~/.deno/bin. The MCP server refuses to start without deno
+# (a server that starts and exposes no tools is worse than a clear error); hooks stay silent.
+set -u
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+MODE="${1:-}"
+[ $# -gt 0 ] && shift
+
+find_deno() {
+  if command -v deno >/dev/null 2>&1; then command -v deno; return 0; fi
+  for c in "$HOME/.deno/bin/deno" "${DENO_INSTALL:-}/bin/deno" /usr/local/bin/deno /opt/homebrew/bin/deno; do
+    [ -x "$c" ] && { echo "$c"; return 0; }
+  done
+  return 1
+}
+
+DENO="$(find_deno)" || DENO=""
+PERMS="--allow-read --allow-env --allow-run=deno,git --allow-write --no-prompt --quiet --config $ROOT/mcp/deno.json"
+
+case "$MODE" in
+  mcp)
+    if [ -z "$DENO" ]; then
+      echo "fresh-dev: deno not found. Install Deno 2 (https://docs.deno.com/runtime/getting_started/installation/) and restart Claude Code." >&2
+      exit 1
+    fi
+    exec "$DENO" run $PERMS "$ROOT/mcp/main.ts" --stdio "$@"
+    ;;
+  cli)
+    if [ -z "$DENO" ]; then echo "fresh-dev: deno not found" >&2; exit 3; fi
+    exec "$DENO" run $PERMS "$ROOT/mcp/cli.ts" "$@"
+    ;;
+  hook)
+    NAME="${1:-}"; [ $# -gt 0 ] && shift
+    [ -z "$DENO" ] && exit 0
+    case "$NAME" in
+      detect) SCRIPT="detect_fresh.ts" ;;
+      invalidate) SCRIPT="invalidate_graph.ts" ;;
+      validate) SCRIPT="validate_fresh.ts" ;;
+      *) exit 0 ;;
+    esac
+    "$DENO" run $PERMS "$ROOT/hooks/$SCRIPT" "$@" 2>/dev/null || true
+    exit 0
+    ;;
+  *)
+    echo "usage: fresh-dev-run mcp | cli <args> | hook <detect|invalidate|validate>" >&2
+    exit 2
+    ;;
+esac

@@ -1,0 +1,16 @@
+# fresh-dev capability bindings for vise — copy to <project>/.vise/capabilities.yaml
+# (or append these keys to an existing file). Shape: "<mcp>.<tool>": "<capability>".
+# The MCP server name is `fresh` (from the plugin's .mcp.json). The x.fresh.*
+# names are the extension namespace vise accepts without registration; the
+# recipes in recipes/fresh-*.yaml dispatch on them.
+fresh.fresh_project: x.fresh.project
+fresh.fresh_routes: x.fresh.routes
+fresh.fresh_route: x.fresh.route
+fresh.fresh_islands: x.fresh.islands
+fresh.fresh_components: x.fresh.components
+fresh.fresh_usages: x.fresh.usages
+fresh.fresh_impact: x.fresh.impact
+fresh.fresh_trace: x.fresh.trace
+fresh.fresh_boundaries: x.fresh.boundaries
+fresh.fresh_validate: x.fresh.validate
+fresh.fresh_graph_export: x.fresh.export_graph

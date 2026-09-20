@@ -1,0 +1,19 @@
+{
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "imports": {
+    "vite": "npm:vite@^7.1.3",
+    "preact": "npm:preact@^10.29.1",
+    "preact/": "npm:/preact@^10.29.1/",
+    "@preact/preset-vite": "npm:@preact/preset-vite@^2.10.2"
+  },
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "deno.ns"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  }
+}

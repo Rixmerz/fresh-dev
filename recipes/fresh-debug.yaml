@@ -1,0 +1,42 @@
+name: fresh-debug
+description: >
+  Explain why a URL behaves the way it does in a Deno Fresh project. Read-only
+  consultation plan that ends in a report, not an assertion: the request
+  chain for the URL, the route file in full, the island named in the symptom,
+  and the validator findings for that file. No edit belongs in this recipe;
+  a fix, if any, is proposed by the calling agent after the report — vise
+  returns a plan, it does not dispatch. Requires the fresh-dev plugin bound
+  via .vise/capabilities.yaml (x.fresh.* → fresh.fresh_*); see
+  templates/vise/capabilities.yaml.
+tier: L2
+inputs:
+  - workspace    # absolute project root
+  - url          # URL under investigation, e.g. /blog/hello?draft=1
+  - file         # route file the URL resolves to (from /fresh-dev:routes <url> or step `trace`)
+  - island       # island named in the symptom, or the one the route hydrates
+steps:
+  - id: trace
+    capability: x.fresh.trace
+    description: Matched route, ordered chain (app, layouts, middleware, handler, page), islands, static and not-found handling
+    args:
+      workspace: "{{ inputs.workspace }}"
+      path: "{{ inputs.url }}"
+      method: GET
+  - id: route
+    capability: x.fresh.route
+    description: The route file in full — data passed to the page, direct renders, hydrated islands, boundary, tests that cite it
+    args:
+      workspace: "{{ inputs.workspace }}"
+      file: "{{ inputs.file }}"
+  - id: island
+    capability: x.fresh.islands
+    description: Props serializability, client closure and violations of the island involved
+    args:
+      workspace: "{{ inputs.workspace }}"
+      name: "{{ inputs.island }}"
+  - id: validate
+    capability: x.fresh.validate
+    description: Findings limited to the route file, with rule IDs and hints for the report
+    args:
+      workspace: "{{ inputs.workspace }}"
+      files: ["{{ inputs.file }}"]

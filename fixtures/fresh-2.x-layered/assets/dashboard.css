@@ -1,0 +1,5 @@
+/* Loaded only for routes/dashboard.tsx via `export const css = [...]`. */
+.dashboard {
+  display: grid;
+  gap: 1rem;
+}

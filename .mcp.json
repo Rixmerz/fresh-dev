@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "fresh": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/fresh-dev-run",
+      "args": ["mcp"],
+      "env": {
+        "DENO_DIR": "${CLAUDE_PLUGIN_DATA}/deno-cache"
+      }
+    }
+  }
+}

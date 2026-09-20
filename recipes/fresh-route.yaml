@@ -1,0 +1,49 @@
+name: fresh-route
+description: >
+  Add a route to a Deno Fresh project without colliding with an existing one.
+  Read-only consultation plan: it maps the route neighbourhood, proves the
+  target URL is not already served, inspects the new route once it exists and
+  validates. The edit itself is done by the calling agent between steps
+  `trace` and `after` — vise returns a plan, it does not dispatch. Requires
+  the fresh-dev plugin bound via .vise/capabilities.yaml
+  (x.fresh.* → fresh.fresh_*); see templates/vise/capabilities.yaml.
+tier: L2
+inputs:
+  - workspace    # absolute project root
+  - url          # target URL, e.g. /pricing
+  - prefix       # route neighbourhood to list, e.g. /
+  - file         # route file the agent will create, e.g. routes/pricing.tsx
+steps:
+  - id: neighbourhood
+    capability: x.fresh.routes
+    description: List the routes around the prefix (layouts and middleware that will apply)
+    args:
+      workspace: "{{ inputs.workspace }}"
+      prefix: "{{ inputs.prefix }}"
+      summary_only: true
+  - id: trace
+    capability: x.fresh.trace
+    description: Prove which route (if any) serves the target URL today; a match means a collision (R006)
+    args:
+      workspace: "{{ inputs.workspace }}"
+      path: "{{ inputs.url }}"
+      method: GET
+  - id: after
+    capability: x.fresh.route
+    description: The new route as Fresh sees it — chain, handler, page, hydrated islands, boundary
+    args:
+      workspace: "{{ inputs.workspace }}"
+      file: "{{ inputs.file }}"
+  - id: validate
+    capability: x.fresh.validate
+    description: Structural validation once the route file exists
+    args:
+      workspace: "{{ inputs.workspace }}"
+      categories: ["routes", "boundaries"]
+  - id: assert
+    capability: meta.assert
+    description: The validator must report ok
+    args:
+      condition: match
+      pattern: "^true$"
+      against: "{{ steps.validate.output.ok }}"

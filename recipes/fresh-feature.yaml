@@ -1,0 +1,52 @@
+name: fresh-feature
+description: >
+  Plan a new feature in a Deno Fresh project: know the project, the route
+  neighbourhood the feature lives in, the components it can reuse and the
+  server/client boundaries it must respect, then validate once the code exists.
+  Read-only consultation plan: every step is a query. The implementation
+  (routes, islands, components) happens between steps `boundaries` and
+  `validate` and is done by the calling agent — vise returns a plan, it does
+  not dispatch. Requires the fresh-dev plugin bound via .vise/capabilities.yaml
+  (x.fresh.* → fresh.fresh_*); see templates/vise/capabilities.yaml.
+tier: L2
+inputs:
+  - workspace    # absolute project root
+  - prefix       # URL prefix the feature lives under, e.g. /billing
+  - component    # name of a component the feature needs, checked for reuse, e.g. PriceTable
+steps:
+  - id: project
+    capability: x.fresh.project
+    description: Fresh version, flavor and counts; the plan stops here if the workspace is not Fresh
+    args:
+      workspace: "{{ inputs.workspace }}"
+  - id: neighbourhood
+    capability: x.fresh.routes
+    description: Routes, layouts and middleware already under the feature prefix
+    args:
+      workspace: "{{ inputs.workspace }}"
+      prefix: "{{ inputs.prefix }}"
+      summary_only: true
+  - id: reuse
+    capability: x.fresh.components
+    description: Existing components matching the name, to reuse instead of duplicating
+    args:
+      workspace: "{{ inputs.workspace }}"
+      name: "{{ inputs.component }}"
+  - id: boundaries
+    capability: x.fresh.boundaries
+    description: Current server/client violations, so the feature does not add to them
+    args:
+      workspace: "{{ inputs.workspace }}"
+      only_violations: true
+  - id: validate
+    capability: x.fresh.validate
+    description: Structural validation once the feature code exists
+    args:
+      workspace: "{{ inputs.workspace }}"
+  - id: assert
+    capability: meta.assert
+    description: The validator must report ok
+    args:
+      condition: match
+      pattern: "^true$"
+      against: "{{ steps.validate.output.ok }}"

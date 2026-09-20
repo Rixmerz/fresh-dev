@@ -1,0 +1,17 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+.site {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+.nav {
+  display: flex;
+  gap: 1rem;
+}
