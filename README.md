@@ -137,7 +137,7 @@ mcp/              the server: core/ (detect, parse, resolve, routes, islands, gr
 skills/           8 knowledge skills + 6 user commands + _shared/references
 hooks/            hooks.json + detect_fresh.ts, invalidate_graph.ts, validate_fresh.ts
 recipes/ integrations/ evals/ agents/README.md
-fixtures/         Fresh 1.7.3 apps, 1.x/2.x layered fixtures with EXPECTED.md, not-fresh
+fixtures/         minimal 1.x/2.x fixtures with EXPECTED.md, not-fresh
 docs/             PLAN_FRESH_DEV.md (the plan, Spanish), research/
 ```
 
