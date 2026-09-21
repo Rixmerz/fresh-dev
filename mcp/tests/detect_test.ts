@@ -8,7 +8,6 @@ Deno.test("detects Fresh 2 Vite, Fresh 2 builder, Fresh 1 manifest and rejects a
     ["fresh-2.x-layered", true, "2", "2.x-vite"],
     ["fresh-2.x-builder", true, "2", "2.x-builder"],
     ["fresh-1.x-layered", true, "1", "1.x-manifest"],
-    ["fresh-1.x/joyeria-landing", true, "1", "1.x-manifest"],
     ["not-fresh", false, null, "unknown"],
   ];
   for (const [name, isFresh, version, flavor] of cases) {

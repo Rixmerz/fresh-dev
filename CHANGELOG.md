@@ -15,6 +15,8 @@ First release, implementing `docs/PLAN_FRESH_DEV.md` phases 1–9.
 - 8 knowledge skills, 6 user commands, shared references (tools, versions, rules).
 - Hooks: detect (SessionStart/CwdChanged/DirectoryAdded), invalidate (PostToolUse/FileChanged,
   plus `mcp_tool` reindex), validate (PostToolUse feedback). All fail open.
-- `.lsp.json` for `deno lsp`; vise recipes/templates; livespec `.livespec.toml` snippet; evals.
-- Fixtures: six Fresh 1.7.3 apps, `fresh-1.x-layered`, `fresh-2.x-basic`, `fresh-2.x-builder`,
-  `fresh-2.x-layered`, `not-fresh`, each with `EXPECTED.md`.
+- `.lsp.json` for `deno lsp`; vise recipes and `integrations/` config snippets; livespec
+  `.livespec.toml` snippet; evals.
+- Fixtures: `fresh-1.x-layered`, `fresh-2.x-basic`, `fresh-2.x-builder`, `fresh-2.x-layered`,
+  `not-fresh`, each with `EXPECTED.md`. All are minimal and purpose-built: this is a tool for
+  Fresh as a framework, so it ships no application or component templates.

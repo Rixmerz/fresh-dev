@@ -31,7 +31,7 @@
 | D7 | **Integración con Vise** | Recipes en formato Vise con capabilities del namespace **`x.fresh.*`**; bindings en `.vise/capabilities.yaml`; validadores expuestos como **CLI headless** para `.vise/quality.yaml`. Sin agentes propios. | La taxonomía de capabilities de Vise es cerrada pero acepta `x.*` (`vise/src/vise/recipes/capabilities.py`). Vise **no tiene capa de dispatch** cross-MCP: `recipe_run` devuelve un plan y `CapabilityValidator` falla con "run it yourself" (`validators.py:773-932`). El único gate que Vise ejecuta de verdad es `quality_check` (argv sin shell), así que el validador Fresh debe existir como comando con exit code. |
 | D8 | **Integración con LiveSpec** | `fresh_graph_export` escribe un `graph.json` **compatible con Graphify (NetworkX node-link)** que LiveSpec ingiere con `ingest_external_graph`; `.livespec.toml` `[graph] external = ".fresh-dev/graph.json"`, `auto_ingest = true`. | Es el **único** canal de entrada de grafos externos que LiveSpec tiene hoy (`livespec/src/livespec_mcp/domain/external_graph.py`, `external_ingest.py`). Solo ingiere aristas cuyos dos extremos son símbolos que LiveSpec ya indexó; nunca crea símbolos. Los hechos a nivel archivo (patrones de ruta, fronteras) **no** caben en LiveSpec hoy y se quedan en fresh-mcp (§11). |
 | D9 | **Soporte de versiones** | Fresh **2.x (2.3.x, estable, docs en usefresh.dev)** como objetivo principal, **1.7.x** como legacy soportado. | Las 6 apps de ejemplo del repo son 1.7.3 (`$fresh/` en `deno.json`, `fresh.gen.ts`) y sirven de fixtures 1.x. El plan original asume `fresh.gen.ts`, que **no existe en 2.x**. |
-| D10 | **Ubicación** | **Decisión final del usuario: repo propio `Rixmerz/fresh-dev`** (la raíz del repo es la raíz del plugin), publicable en el marketplace `rixmerz` con `source: github`, igual que `vise`. Las 6 apps de ejemplo 1.7.3 de `fresh-mcp` se copiaron a `fixtures/fresh-1.x/`; el generador Node sigue en `Rixmerz/fresh-mcp` sin cambios. | El usuario indicó aplicar el plan en el repositorio vacío `fresh-dev`. Las rutas `fresh-dev/…` de §3 se leen como la raíz de este repo. |
+| D10 | **Ubicación** | **Decisión final del usuario: repo propio `Rixmerz/fresh-dev`** (la raíz del repo es la raíz del plugin), publicable en el marketplace `rixmerz` con `source: github`, igual que `vise`. Las 6 landing pages de ejemplo 1.7.3 de `fresh-mcp` **no** se copian: `fresh-dev` es una herramienta de framework, no una librería de componentes prehechos; la cobertura 1.x la da el fixture mínimo `fresh-1.x-layered`. el generador Node sigue en `Rixmerz/fresh-mcp` sin cambios. | El usuario indicó aplicar el plan en el repositorio vacío `fresh-dev`. Las rutas `fresh-dev/…` de §3 se leen como la raíz de este repo. |
 | D11 | **Read-only hasta fase 10** | Todas las tools devuelven datos; ninguna escribe en el proyecto. Única excepción explícita: `fresh_graph_export` escribe **solo** bajo `<workspace>/.fresh-dev/`. | Mismo contrato que LiveSpec (`.mcp-docs/`) y Vise (`.vise/`): footprint propio, nunca el árbol del usuario. |
 
 ---
@@ -41,7 +41,7 @@
 ### 1.1 Este repo (`Rixmerz/fresh-mcp`, `main` = `02dfc00`)
 
 - `fresh-mcp-server/` es un **generador de plantillas** en Node/TypeScript (MCP SDK `^1.22.0`, zod). Tiene handlers para 11 tools pero **solo registra 2** en `registerTools` (`create_complete_landing`, `search_images`); `analyze_project` existe pero solo cuenta archivos. Nada de lo que el plan pide (grafo, fronteras, impacto) existe hoy.
-- Contiene **6 apps Fresh 1.7.3 completas** (`cafe-artesanal`, `ciberseguridad-landing`, `frutas-frescas`, `joyeria-elegante`, `joyeria-landing`, `perfume-luxe`) con `deno.json`, `fresh.gen.ts`, `routes/`, `islands/`, `components/`, `tailwind.config.ts`. Ninguna tiene `_middleware.ts` ni `_layout.tsx`; todas tienen `_app.tsx`, `_404.tsx` y `routes/api/joke.ts`. Son fixtures 1.x listos; **faltan fixtures 2.x y fixtures con middleware/layouts/route groups**.
+- Contiene **6 apps Fresh 1.7.3 completas** generadas por el generador Node, con `deno.json`, `fresh.gen.ts`, `routes/`, `islands/`, `components/`, `tailwind.config.ts`. Ninguna tiene `_middleware.ts` ni `_layout.tsx`; todas tienen `_app.tsx`, `_404.tsx` y `routes/api/joke.ts`. Son trabajo de clientes y se quedan en el repo privado `fresh-mcp`: **no** se copian a este repo público. La cobertura 1.x la dan fixtures propios, mínimos y escritos a mano.
 - `docs/` tiene conocimiento Fresh reutilizable para los skills: `JSX_PITFALLS.md` (islands vs components, rutas, `class` vs `className`), `COMPONENT_COMPOSITION.md`, `COMMON_ISSUES.md` y `TAILWIND_SETUP.md` (todo **1.x + Tailwind 3**; Fresh 2 usa Tailwind 4 vía plugin de Vite, hay que revisarlo antes de citarlo).
 - `fresh-mcp-server/src/utils/tailwind-validator.ts` (`validateTailwindSetup`, 4 categorías) y `validation.ts` (`validateJSXStructure`, `validateFreshConventions`) contienen reglas portables al validador `conventions` (§5).
 - **Deuda que hay que resolver antes de publicar nada** (fase 0):
@@ -144,13 +144,12 @@ fresh-dev/                          (repo Rixmerz/fresh-dev — la raíz del rep
 │   │   ├── hooks.json
 │   │   ├── detect_fresh.ts  invalidate_graph.ts  validate_fresh.ts   (deno, fail-open)
 │   ├── recipes/                    YAML formato Vise (x.fresh.*); /fresh-dev:init los copia a .vise/recipes/
-│   ├── templates/
+│   ├── integrations/
 │   │   ├── vise/capabilities.yaml  vise/quality.fresh.yaml
 │   │   └── livespec/livespec.toml.snippet
 │   ├── evals/                      claude plugin eval (casos por skill)
 │   └── agents/README.md            "intencionalmente vacío — ver §8"
 ├── fixtures/
-│   ├── fresh-1.x/                  las 6 apps actuales (movidas desde fresh-mcp-server/)
 │   ├── fresh-1.x-layered/          nueva: _layout, _middleware anidado, route groups, [...rest], islands anidadas
 │   ├── fresh-2.x-basic/            `deno run -Ar jsr:@fresh/init` limpio (commiteado)
 │   ├── fresh-2.x-layered/          nueva: define.*, (_islands)/, _error.tsx, app.use(), mountApp, WebSocket
@@ -397,7 +396,7 @@ Reglas de redacción (de Vise `CLAUDE.md`, aplican aquí): sin nombres de client
 
 | Skill | `argument-hint` | Qué hace (cuerpo) | `allowed-tools` |
 |---|---|---|---|
-| `init` | `[workspace]` | 1) `fresh_project` sobre `$0` o `!`pwd``; si no es Fresh, dice qué señal faltó y para. 2) Muestra versión/flavor/conteos. 3) `fresh_reindex`. 4) Detecta vecinos por huella (`.vise/`, `.mcp-docs/docs.db`, `.livespec.toml`) y **propone** (no escribe sin confirmar) los snippets de `templates/`: `.vise/recipes/fresh-*.yaml`, `.vise/capabilities.yaml`, `.vise/quality.yaml` (checks `fresh`, `types`, `lint`, `fmt`, `unit`), `.livespec.toml` `[graph]`, `.gitignore` `.fresh-dev/`. 5) Recuerda que los hooks ya están activos | `mcp__*fresh*__*`, `Read`, `Bash(pwd)`, `Bash(ls:*)`, `Write` solo tras confirmación |
+| `init` | `[workspace]` | 1) `fresh_project` sobre `$0` o `!`pwd``; si no es Fresh, dice qué señal faltó y para. 2) Muestra versión/flavor/conteos. 3) `fresh_reindex`. 4) Detecta vecinos por huella (`.vise/`, `.mcp-docs/docs.db`, `.livespec.toml`) y **propone** (no escribe sin confirmar) los snippets de `integrations/`: `.vise/recipes/fresh-*.yaml`, `.vise/capabilities.yaml`, `.vise/quality.yaml` (checks `fresh`, `types`, `lint`, `fmt`, `unit`), `.livespec.toml` `[graph]`, `.gitignore` `.fresh-dev/`. 5) Recuerda que los hooks ya están activos | `mcp__*fresh*__*`, `Read`, `Bash(pwd)`, `Bash(ls:*)`, `Write` solo tras confirmación |
 | `analyze` | `[--full]` | `fresh_project` + `fresh_routes(summary_only)` + `fresh_islands(summary_only)` + `fresh_boundaries(only_violations)` + `fresh_validate` resumido → informe de ≤ 40 líneas con siguientes pasos | `mcp__*fresh*__*` |
 | `routes` | `[prefix\|kind]` | `fresh_routes` filtrado; tabla `pattern · kind · methods · layouts · middlewares · islands`; si se pasa una URL, `fresh_trace` | `mcp__*fresh*__*` |
 | `impact` | `<file…\|git-ref>` | `fresh_impact` (archivos o `git: {base:$0}`); imprime rutas/islands afectadas, riesgos de frontera y **comandos de verificación sugeridos**; si LiveSpec está montado, sugiere `git_diff_impact` para el lado de símbolos | `mcp__*fresh*__*`, `Bash(git diff:*)` |
@@ -487,7 +486,7 @@ Capabilities que fresh-dev define (namespace de extensión, aceptado por `valida
 | `x.fresh.validate` | `fresh.fresh_validate` | read |
 | `x.fresh.export_graph` | `fresh.fresh_graph_export` | write (solo `.fresh-dev/`) |
 
-`templates/vise/capabilities.yaml` (lo que `/fresh-dev:init` propone copiar a `.vise/capabilities.yaml`; formato `"<mcp>.<tool>": "<capability>"` según `capability_set`):
+`integrations/vise/capabilities.yaml` (lo que `/fresh-dev:init` propone copiar a `.vise/capabilities.yaml`; formato `"<mcp>.<tool>": "<capability>"` según `capability_set`):
 
 ```yaml
 fresh.fresh_project: x.fresh.project
@@ -516,7 +515,7 @@ Recipes (cada una: `inputs`, `steps` con `capability` + `args` con `{{ inputs.* 
 
 Los pasos "*(implementación)*" no existen en el YAML: Vise no ejecuta y el recipe solo describe consultas; el skill `fresh-development` explica dónde encaja la edición entre pasos.
 
-### 10.3 Quality gate (`templates/vise/quality.fresh.yaml` → `.vise/quality.yaml`)
+### 10.3 Quality gate (`integrations/vise/quality.fresh.yaml` → `.vise/quality.yaml`)
 
 ```yaml
 checks:
@@ -565,7 +564,7 @@ Todas las aristas llevan `confidence` (`EXTRACTED`/`INFERRED`) y `confidence_sco
 
 ### 11.2 Configuración
 
-`templates/livespec/livespec.toml.snippet` (lo propone `/fresh-dev:init`):
+`integrations/livespec/livespec.toml.snippet` (lo propone `/fresh-dev:init`):
 
 ```toml
 [graph]
@@ -617,16 +616,16 @@ Falsos positivos a cubrir con `fixtures/not-fresh/`: proyecto Deno + Vite sin Fr
 
 | Fase | Entregable | Criterio de aceptación | Depende de |
 |---|---|---|---|
-| **0. Higiene del repo** | Rotar y eliminar la key de Pexels; mover generador a `legacy/fresh-mcp-server/`; mover apps a `fixtures/fresh-1.x/`; borrar `.serena/`, screenshots, reports sueltos; `.gitignore` (`.claude.json`, `.fresh-dev/`, `.mcp-docs/`); README raíz nuevo; CI base | `git grep -i pexels_api_key` vacío; CI verde en `main` | — |
+| **0. Higiene del repo** | Higiene de secretos y de artefactos sueltos en el repo privado `fresh-mcp`; decidir el destino del generador Node; `.gitignore`; README raíz nuevo; CI base | sin secretos en el índice de git; CI verde en `main` | — |
 | **1. Detección** | `mcp/core/detect.ts` + `hooks/detect_fresh.ts` + `fixtures/not-fresh` + `fresh-2.x-basic` | 100 % de fixtures clasificados; `not-fresh` silencioso; hook < 100 ms; SessionStart inyecta el bloque en un proyecto Fresh real | 0 |
 | **2. Fresh MCP (núcleo)** | `main.ts` stdio, `fresh_project`, `fresh_routes`, `fresh_route`, `fresh_islands`, `fresh_components`, `fresh_dependencies`, `fresh_usages`, `fresh_boundaries`, `fresh_trace`, `fresh_reindex`; índice incremental; fixtures layered; rango soportado fijado y comprobado contra el código fuente (`@fresh/core >=2.3 <3`, `fresh@1.7.x`) | golden tests verdes en 1.x y 2.x; `fresh_trace` acierta la tabla de URLs; `bin/fresh-dev-run` arranca con `npx @modelcontextprotocol/inspector`; respuestas < 16 KB con `summary_only` | 1 |
 | **3. Skills** | 8 skills + `_shared/references/` (revisando los docs 1.x existentes para 2.x) | `claude plugin eval` de 3 casos ≥ 0.8; `/skill-doctor` sin warnings de descripción; revisión humana de cada SKILL.md contra el checklist de §6 | 2 |
-| **4. Validators + CLI** | 30 reglas de §5, `fresh_validate`, `mcp/cli.ts`, `bin/fresh-mcp`, `templates/vise/quality.fresh.yaml` | cada regla con fixture +/−; CLI exit codes; `deno lint`/`deno check` fusionados con `external`; `.vise/quality.yaml` `fresh` pasa por `quality_check` en el fixture | 2 |
+| **4. Validators + CLI** | 30 reglas de §5, `fresh_validate`, `mcp/cli.ts`, `bin/fresh-mcp`, `integrations/vise/quality.fresh.yaml` | cada regla con fixture +/−; CLI exit codes; `deno lint`/`deno check` fusionados con `external`; `.vise/quality.yaml` `fresh` pasa por `quality_check` en el fixture | 2 |
 | **5. Commands (skills de usuario) + publicación** | `init/analyze/routes/impact/validate/debug`; `fresh_impact`; marketplace local; PR a `Rixmerz/claude-plugins` | instalación limpia desde el marketplace en una máquina sin el clone; nombres reales de tools documentados; `/fresh-dev:init` propone (no escribe) los templates | 3, 4 |
 | **6. Hooks completos** | `invalidate-graph`, `validate-fresh`, `.fresh-dev/warnings.jsonl` | edición en `islands/` produce feedback ≤ 8 líneas en < 2 s; nunca bloquea; con `FRESH_DEV_HOOKS=off` inertes; coexistencia con Vise verificada | 4 |
 | **7. LSP** | `.lsp.json` (`deno lsp`); documentación de conflicto con `typescript-lsp`; skill explica LSP vs fresh_* vs deno check | `goToDefinition` sobre `$fresh/`/`jsr:` resuelve en Claude Code; `vise doctor` no reporta doble reclamo cuando solo está fresh-dev | 5 |
-| **8. LiveSpec** | `fresh_graph_export`, `templates/livespec/`, test de contrato | `ingest_external_graph(dry_run)` mapea > 90 % de nodos en `fresh-2.x-layered`, `unknown_relation == 0`; `who_calls(Page)` muestra layout/route tras ingesta | 2, 4 |
-| **9. Recipes** | 6 YAML + `templates/vise/capabilities.yaml`; issues de follow-up en vise/livespec | `recipe_run` devuelve plan completo sin `unresolved`; `capability_audit` limpio con el template | 5, 8 |
+| **8. LiveSpec** | `fresh_graph_export`, `integrations/livespec/`, test de contrato | `ingest_external_graph(dry_run)` mapea > 90 % de nodos en `fresh-2.x-layered`, `unknown_relation == 0`; `who_calls(Page)` muestra layout/route tras ingesta | 2, 4 |
+| **9. Recipes** | 6 YAML + `integrations/vise/capabilities.yaml`; issues de follow-up en vise/livespec | `recipe_run` devuelve plan completo sin `unresolved`; `capability_audit` limpio con el template | 5, 8 |
 | **10. Modificación semántica** (fuera de este plan) | tools de escritura (`fresh_create_route`, `fresh_move_component` con actualización de imports/`fresh.gen.ts`) | diseño aparte; requiere consentimiento explícito y snapshots (Vise) | 9 |
 
 Cambios de orden respecto al plan original: la detección (hook mínimo) sube a fase 1 porque es barata y da valor inmediato; los validators van antes que los commands porque `/fresh-dev:validate` y el hook `validate-fresh` dependen de ellos; el LSP baja a fase 7 porque es un archivo de configuración y su valor depende de que los skills expliquen cuándo usarlo.
