@@ -7,7 +7,7 @@ description: >
   The create/edit is done by the calling agent between steps `boundaries`
   and `after` — vise returns a plan, it does not dispatch. Requires the
   fresh-dev plugin bound via .vise/capabilities.yaml
-  (x.fresh.* → fresh.fresh_*); see templates/vise/capabilities.yaml.
+  (x.fresh.* → fresh.fresh_*); see integrations/vise/capabilities.yaml.
 tier: L2
 inputs:
   - workspace    # absolute project root

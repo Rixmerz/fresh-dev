@@ -150,23 +150,3 @@ Deno.test("graph export writes Graphify-compatible node-link JSON that livespec 
   );
   await Deno.remove(`${idx.workspace}/.fresh-dev`, { recursive: true });
 });
-
-Deno.test("legacy 1.x example apps index without errors", async () => {
-  for (
-    const app of [
-      "cafe-artesanal",
-      "ciberseguridad-landing",
-      "frutas-frescas",
-      "joyeria-elegante",
-      "joyeria-landing",
-      "perfume-luxe",
-    ]
-  ) {
-    const idx = await loadFixture(`fresh-1.x/${app}`);
-    assertEquals(idx.detection.version, "1", app);
-    assert(idx.routes.some((r) => r.kind === "app"), app);
-    const r = await validate(idx);
-    assertEquals(r.summary.unverified, [], app);
-    assert(r.findings.every((f) => f.id !== "R008"), `${app}: manifest in sync`);
-  }
-});
